@@ -1,7 +1,10 @@
-def main():
+def main() -> None:
+    """Main function to demonstrate GitHub Actions workflow."""
     print("Hello, World from GitHub Actions!")
     print("This is a simple Python workflow example.")
     print("this is the second time going thru the workflow")
-    print("✅ Workflow executed successfully!")    
+    print("✅ Workflow executed successfully!")
+
+
 if __name__ == "__main__":
     main()

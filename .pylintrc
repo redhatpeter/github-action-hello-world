@@ -1,0 +1,20 @@
+[MAIN]
+# Files or directories to be skipped
+ignore=.git,__pycache__,.github
+
+[MESSAGES CONTROL]
+# Disable some overly strict checks for learning purposes
+disable=
+    missing-module-docstring,
+    missing-function-docstring,
+    missing-class-docstring,
+    too-few-public-methods,
+    invalid-name
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=100
+
+[BASIC]
+# Good variable names
+good-names=i,j,k,ex,_,main
