@@ -206,6 +206,122 @@ jobs:
 
 ---
 
+## 🔧 Multi-Stage CI Pipeline with Job Dependencies
+
+### Real Example: Code Quality + Application Run
+
+This is our actual CI pipeline deployed in this repository!
+
+```yaml
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # Job 1: Must pass first
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+        
+    - name: Run Pylint (Syntax & Style Check)
+      run: |
+        echo "🔍 Running Pylint..."
+        pylint src/ --disable=C0114,C0116
+        
+    - name: Run Mypy (Type Check)
+      run: |
+        echo "🔍 Running Mypy type checking..."
+        mypy src/ --ignore-missing-imports
+        
+    - name: Run Black (Format Check)
+      run: |
+        echo "🔍 Checking code formatting with Black..."
+        black --check src/
+
+  # Job 2: Only runs if Job 1 succeeds
+  run-application:
+    name: Run Hello World Application
+    runs-on: ubuntu-latest
+    needs: code-quality  # 🔑 This creates the dependency!
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Run Hello World script
+      run: python src/main.py
+```
+
+### Key Features:
+
+**Job Dependencies with `needs`:**
+- `needs: code-quality` makes `run-application` wait for `code-quality`
+- If `code-quality` fails → `run-application` is **skipped**
+- If `code-quality` passes → `run-application` **executes**
+
+**Development Dependencies (`requirements-dev.txt`):**
+```txt
+pylint>=3.0.0   # Syntax & style checking
+mypy>=1.8.0     # Type checking
+black>=24.0.0   # Code formatting
+```
+
+**Local Testing:**
+```bash
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dev dependencies
+pip install -r requirements-dev.txt
+
+# Run checks locally before pushing
+pylint src/ --disable=C0114,C0116
+mypy src/ --ignore-missing-imports
+black --check src/
+
+# Format code if needed
+black src/
+```
+
+**Actual Workflow Results:**
+```
+✅ Code Quality Checks (19s)
+   🔍 Pylint: 10.00/10
+   🔍 Mypy: Success - no issues found
+   🔍 Black: All done! ✨ 🍰 ✨
+
+✅ Run Hello World Application (4s)
+   🚀 Running application...
+   Hello, World from GitHub Actions!
+```
+
+---
+
 ## 🎯 Workflow Triggers (Events)
 
 ### Common Events:
@@ -328,7 +444,59 @@ jobs:
 
 ---
 
-## 📖 Resources
+## � Project Structure
+
+```
+hello-world-python/
+├── .github/
+│   └── workflows/
+│       ├── ci-pipeline.yml          # Multi-stage CI with quality checks
+│       └── run-hello-world.yml      # Simple workflow (original)
+├── src/
+│   └── main.py                      # Python app with type hints
+├── .venv/                           # Virtual environment (gitignored)
+├── .gitignore                       # Python gitignore
+├── .pylintrc                        # Pylint configuration
+├── requirements.txt                 # Application dependencies
+├── requirements-dev.txt             # Development/linting dependencies
+├── GITHUB_ACTIONS_NOTES.md          # This file!
+└── README.md                        # Project documentation
+```
+
+---
+
+## 🚀 What We Built
+
+### Workflows Implemented:
+
+1. **Simple Hello World Workflow** (`run-hello-world.yml`)
+   - Basic single-job workflow
+   - Demonstrates core concepts
+   - Runs on: push, pull_request, workflow_dispatch
+
+2. **Multi-Stage CI Pipeline** (`ci-pipeline.yml`)
+   - **Stage 1**: Code Quality Checks
+     - Pylint (syntax & style)
+     - Mypy (type checking)
+     - Black (formatting)
+   - **Stage 2**: Run Application (depends on Stage 1)
+   - Demonstrates job dependencies with `needs`
+   - Quality gate: Stage 2 only runs if Stage 1 passes
+
+### Learning Outcomes:
+
+✅ Set up a Python project with GitHub Actions  
+✅ Configured authentication (GitHub CLI)  
+✅ Created workflows with events, jobs, and steps  
+✅ Implemented job dependencies with `needs`  
+✅ Added code quality checks (linting, type checking, formatting)  
+✅ Used virtual environments for local testing  
+✅ Pushed code and triggered automated workflows  
+✅ Viewed workflow runs and logs via CLI and web interface  
+
+---
+
+## �📖 Resources
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Workflow Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
